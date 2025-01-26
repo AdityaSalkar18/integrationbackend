@@ -74,30 +74,6 @@ router.get('/', async (req, res) => {
 });
 
 
-// // Get profiles with all required fields filled
-// router.get('/complete', async (req, res) => {
-//   try {
-//     // Define the required fields
-//     const requiredFields = [
-//       'name', 'email', 'bio', 'act', 'add', 'web', 'eyear', 'phone', 'pone', 
-//       'pnone', 'ptwo', 'pntwo', 'pthree', 'pnthree', 'btitle', 'bdesc', 'ps', 
-//       'tm', 'cp', 'sms', 'bm', 'mjc', 'cad', 'tp', 'fdesc', 'rev', 'expen', 'net'
-//     ];
-
-//     // Fetch all profiles
-//     const profiles = await Profile.find();
-
-//     // Filter profiles that have all required fields filled
-//     const completeProfiles = profiles.filter(profile => 
-//       requiredFields.every(field => profile[field] !== undefined && profile[field] !== null && profile[field] !== '')
-//     );
-
-//     res.status(200).json(completeProfiles);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Could not fetch profiles' });
-//   }
-// });
-
 
 
 // // Get profiles with all required fields filled and act is 'Startup'
@@ -124,7 +100,54 @@ router.get('/complete', async (req, res) => {
   }
 });
 
-// module.exports = router;
+// // Backend Route - Express.js
+// router.get('/completecat/:category?', async (req, res) => {
+//   try {
+//     const { category } = req.params;
+
+//     // If category is provided, filter by it; otherwise, fetch all profiles
+//     const query = category ? { cat: category } : {};
+
+//     // Fetch profiles based on the query
+//     const profiles = await Profile.find(query);
+
+//     // If no profiles are found
+//     if (!profiles || profiles.length === 0) {
+//       return res.status(404).json({ message: 'No profiles found' });
+//     }
+
+//     // Return the found profiles
+//     res.status(200).json(profiles);
+//   } catch (error) {
+//     console.error('Error fetching profiles:', error);
+//     res.status(500).json({ error: 'Could not fetch profiles' });
+//   }
+// });
+
+router.get('/completecat/:category?', async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    // If category is provided, use regex for case-insensitive matching; otherwise, fetch all profiles
+    const query = category ? { cat: { $regex: new RegExp(category, 'i') } } : {};
+
+    // Fetch profiles based on the query
+    const profiles = await Profile.find(query);
+
+    // If no profiles are found
+    if (!profiles.length) {
+      return res.status(404).json({ message: 'No profiles found' });
+    }
+
+    // Return the found profiles
+    res.status(200).json(profiles);
+  } catch (error) {
+    console.error('Error fetching profiles:', error);
+    res.status(500).json({ error: 'Could not fetch profiles' });
+  }
+});
+
+
 
 
 
